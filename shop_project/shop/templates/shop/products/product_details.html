@@ -1,0 +1,141 @@
+{%  extends 'shop/layouts/main.html' %}
+{% block title %}
+ShopKart | Online Shopping
+{% endblock title %}
+<!--bootstrap carosol image slide from  that we are adding the images -->
+{% block content %}
+<section class="bg-light py-4 my-5" style="min-height:600px;">
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                <h4 class="mb-3">{{products}} Details</h4>
+                <hr style="border-color:#b8bfc2;">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                      <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li><!--for breadcrums to redirect ot home collections and use the name in the url--> 
+                      <li class="breadcrumb-item"><a href="{% url 'collections' products.category.name  %}">Collections</a></li><!--here we are giving the collections name , product category(mobile,grocery..) from the collections not from the product bcoz in product we have 2 parameters-->
+                      <li class="breadcrumb-item active" aria-current="page">{{products}}</li>
+                    </ol>
+                </nav>
+                {% include 'shop/inc/message.html' %}
+            </div>
+            <div class="col-4 my-3 pic-box">
+            {% if products.trending %} <!--if products are trending here trending=1 so it becomes true and display hot by default it is 0 so no hot tag-->
+                <div class="hot">Hot</div>
+            {% endif %}    
+          <img src="{{products.product_image.url}}" class="card-image-top"alt="{{products}}" style="display: block; margin: 0 auto; max-width: 330px; height: auto;"><!--here from the selected product we are fetching the image-->
+        </div>
+        <div class="col-8 my-3">
+            <h5 class="text-success">{{products | upper}}</h5>
+            <p>{{products.vendor}}</p>
+            <p>{{products.description}}</p>
+            <h6 class="my-2 text-danger">Current Price : Rs. <s>{{products.original_price}}</s></h6>
+            <h5 class="my-2 text-primary ">Offer Price : Rs. {{products.selling_price}}</h5>
+            <div class="my-3">
+                {% if products.quantity > 0 %}
+                <input type="hidden" value="{{products.id}}" id="pid"><!--in hidden field we have product we need that product id check how we are getting once  -->
+
+                <p>
+                    <div class="input-group" style="width:150px">
+                        <button class="input-group-text bg-success text-light" id="btnMinus"><i class="fa fa-minus"></i></button>
+                        <input type="text" name="qty" id="txtQty" value="1" class="form-control text-center">
+                        <button class="input-group-text bg-success text-light" id="btnPlus"><i class="fa fa-plus"></i></button>
+                       
+                    </div>
+                </p>
+                <button class="btn btn-primary" id="btnCart"><i class="fa fa-shopping-cart"></i>Add to Cart</button>
+                {% else %}
+                <button class="btn btn-secondary"><i class="fa fa-minus"></i>Out of Stock</button>
+                {% endif %}    
+                <button class="btn btn-danger" id="btnFav"><i class="fa fa-heart"></i></button>
+            </div>
+        </div>
+        </div>
+    </div>
+</section> 
+<script> 
+document.addEventListener("DOMContentLoaded",function(event){  //<!--after  loading the dom then only i want other process to run-->
+   const btnPlus=document.getElementById("btnPlus");
+   const btnMinus=document.getElementById("btnMinus");
+   const txtQty=document.getElementById("txtQty");
+   const pid=document.getElementById("pid");
+   const btnCart=document.getElementById("btnCart")
+   const btnFav=document.getElementById("btnFav")
+
+   btnPlus.addEventListener("click",function() { //when we click the +btn the function is called
+    let qty=parseInt(txtQty.value,10);//text box value is converted to integer 10 means base number and stored into the var qty
+    qty=isNaN(qty)?0:qty;//in case it is not a number but a text then i want to load it as 0 or else the quantity itself
+    if(qty<10){
+        qty++;
+        txtQty.value=qty;
+    }
+   });
+   btnMinus.addEventListener("click",function() { //when we click the +btn the function is called
+    let qty=parseInt(txtQty.value,10);//text box value is converted to integer 10 means base number and stored into the var qty
+    qty=isNaN(qty)?0:qty;//in case it is not a number but a text then i want to load it as 0 or else the quantity itself
+    if(qty>1){
+        qty--;
+        txtQty.value=qty;
+    }
+   });
+   btnCart.addEventListener("click",function() { //when we click the +btn the function is called
+
+    let qty=parseInt(txtQty.value,10);//text box value is converted to integer 10 means base number and stored into the var qty
+    qty=isNaN(qty)?0:qty;//in case it is not a number but a text then i want to load it as 0 or else the quantity itself
+    if(qty>0){
+        let postObj= {//we are storing all this in the var postObj
+            'product_qty':qty,
+            'pid':pid.value
+        }
+        console.log(postObj);//we are going to send this data through ajax to the server and then store it in the database/
+        fetch("/addtocart",{//fetch method is used for http request for which url we are using that and pass the parameters
+          method:"POST",
+          credentials:'same-origin',//it will be in same website 
+          headers:{ //json format data http response
+            'Accept': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest',
+            'X-CSRFToken':'{{csrf_token}}',
+        },
+        body:JSON.stringify(postObj)//we are converting the postObj to json format and sending it to the body
+       }).then(response => {
+           return response.json();
+      }).then(data => {//server response we are checking in the console //here we get whether product is added and user is logged in  
+          console.log(data);
+          alert(data['status']);
+      });
+
+    }else{
+        alert("Please Enter the quantity");
+    }
+
+});
+btnFav.addEventListener("click",function() { //when we click the +btn the function is called
+
+
+        let postObj= {//we are storing all this in the var postObj
+            
+            'pid':pid.value
+        }
+        fetch("/fav",{//fetch method is used for http request for which url we are using that and pass the parameters
+          method:"POST",
+          credentials:'same-origin',//it will be in same website 
+          headers:{ //json format data http response
+            'Accept': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest',
+            'X-CSRFToken':'{{csrf_token}}',
+        },
+        body:JSON.stringify(postObj)//we are converting the postObj to json format and sending it to the body
+       }).then(response => {
+           return response.json();
+      }).then(data => {//server response we are checking in the console //here we get whether product is added and user is logged in  
+          console.log(data);
+          alert(data['status']);
+      });
+
+    });
+
+});    
+
+</script> 
+{% endblock content %}
+

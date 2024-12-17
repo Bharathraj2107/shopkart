@@ -1,0 +1,23 @@
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top"><!--for navbar changing the color and to remain at the top-->
+    <div class="container"><!--here we removed the fluid so it moves from left ot little center and ms-auto-->
+      <a class="navbar-brand" href="{% url 'home' %}"><i class="fa fa-cart-plus"></i>ShopKart</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <div class="navbar-nav ms-auto"><!--for navbar to move left we use this-->
+          <a class="nav-link " aria-current="page" href="{% url 'home' %}"><i class="fa fa-home"></i>Home</a><!--here with the help of name field in the url we are connecting in the url -->
+          {% if request.user.is_authenticated %} <!--if user is logged in -->
+            <a class="nav-link" aria-current="page" href="#"><i class="fa fa-user"></i>{{request.user}}</a> <!--i want the username-->
+            <a class="nav-link"  aria-current="page" href="{% url 'logout' %}"><i class="fa fa-sign-out"></i>Logout</a>
+          {% else%} <!--if user not logged in then i need login and register link-->
+              <a class="nav-link" href="{% url 'login' %}"><i class="fa fa-sign-in"></i>Login</a><!--here we can use login but not in the urls we have login function built in -->
+              <a class="nav-link" href="{% url 'register' %}"><i class="fa fa-user"></i>Register</a>
+          {% endif %}
+            <a class="nav-link" href="{% url 'collections' %}"><i class="fa fa-cubes"></i>Collections</a>
+            <a class="nav-link" href="{% url 'cart' %}"><i class="fa fa-shopping-cart"></i>Cart</a>
+            <a class="nav-link" href="{% url 'favviewpage' %}"><i class="fa fa-heart"></i>Favourite</a>
+        </div>
+      </div>
+    </div>
+  </nav>
